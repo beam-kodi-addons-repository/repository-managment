@@ -7,8 +7,6 @@ require 'git'
 require 'optparse'
 require 'rexml/document'
 
-require 'logger'
-
 options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: create-package [options]"
@@ -29,10 +27,7 @@ unless options[:tag]
   exit 1
 end
 
-logger = Logger.new(STDOUT)
-logger.level = Logger::DEBUG
-
-git_repo = Git.open(options[:repository], log: logger)
+git_repo = Git.open(options[:repository])
 xmldoc = REXML::Document.new(git_repo.show(options[:tag], "addon.xml"))
 addon_name = options[:package] || xmldoc.elements["addon"].attribute(:id)
 addon_version = options[:package] || xmldoc.elements["addon"].attribute(:version)
