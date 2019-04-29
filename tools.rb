@@ -27,8 +27,9 @@ def open_git_repo(path)
   return Git.open(path)
 end
 
-def clone_github_repo(repository_user, repository_name, branch, depth = 1)
-  git_repo = Git.clone("https://#{GITHUB_USER}:#{GITHUB_TOKEN}@github.com/#{repository_user}/#{repository_name}.git",repository_name, { depth: depth, branch: branch} )
+def clone_github_repo(repository_user, repository_name, branch, path = nil)
+  path = repository_name if path.nil?
+  git_repo = Git.clone("https://#{GITHUB_USER}:#{GITHUB_TOKEN}@github.com/#{repository_user}/#{repository_name}.git", path, { depth: 1, branch: branch} )
   git_repo.config('user.name', GIT_USER_NAME)
   git_repo.config('user.email', GIT_USER_EMAIL)
   return git_repo

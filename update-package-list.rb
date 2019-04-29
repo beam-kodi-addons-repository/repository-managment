@@ -74,7 +74,7 @@ package_options.merge!(addon_detail)
 $logger.info("Collected addon information #{package_options.inspect}")
 
 $logger.info("Fetching current package list")
-git_repo = clone_github_repo(options[:package_list_user], options[:package_list_repository], "master")
+git_repo = clone_github_repo(options[:package_list_user], options[:package_list_repository], "master", "cloned-current-package-list")
 package_file_path = "#{options[:package_list_repository]}/packages.yml"
 
 $logger.info("Loading package list")
