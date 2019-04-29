@@ -77,8 +77,18 @@ $logger.info("Fetching current package list")
 git_repo = clone_github_repo(options[:package_list_user], options[:package_list_repository], "master")
 package_file_path = "#{options[:package_list_repository]}/packages.yml"
 
-$logger.info("Updating package list")
+$logger.info("Loading package list")
 packages_content = load_package_list(package_file_path)
+
+if packages_content.has_key?(package_options[:addon_id]) &&
+  packages_content[package_options[:addon_id]][:sha256] == package_options[:sha256] &&
+  packages_content[package_options[:addon_id]][:addon_version] == package_options[:addon_version]
+  $logger.info("Package is same as deployed, nothing to do")
+  $logger.info("Destroying packages list repository")
+  destroy_git_repo(git_repo)
+  exit 0
+end
+$logger.info("Updating package list")
 packages_content = update_package_list(packages_content, package_options)
 
 branch_name = "package-update-#{Time.now.to_i}"
