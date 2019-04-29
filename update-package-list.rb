@@ -75,19 +75,11 @@ $logger.info("Collected addon information #{package_options.inspect}")
 
 $logger.info("Fetching current package list")
 git_repo = clone_github_repo(options[:package_list_user], options[:package_list_repository], "master", "cloned-current-package-list")
-package_file_path = "#{options[:package_list_repository]}/packages.yml"
+package_file_path = "cloned-current-package-list/packages.yml"
 
 $logger.info("Loading package list")
 packages_content = load_package_list(package_file_path)
 
-if packages_content.has_key?(package_options[:addon_id]) &&
-  packages_content[package_options[:addon_id]][:sha256] == package_options[:sha256] &&
-  packages_content[package_options[:addon_id]][:addon_version] == package_options[:addon_version]
-  $logger.info("Package is same as deployed, nothing to do")
-  $logger.info("Destroying packages list repository")
-  destroy_git_repo(git_repo)
-  exit 0
-end
 $logger.info("Updating package list")
 packages_content = update_package_list(packages_content, package_options)
 
@@ -97,6 +89,13 @@ checkout_branch(git_repo, branch_name)
 
 $logger.info("Saving package list")
 write_package_list(package_file_path, packages_content)
+
+unless repo_has_been_changed?(git_repo)
+    $logger.info("No changes in package list, nothing to do..")
+    $logger.info("Destroying packages list repository")
+    destroy_git_repo(git_repo)
+    exit 0
+end
 
 $logger.info("Commiting changes")
 commit_changes(git_repo, "#{addon_detail[:addon_id]} v#{addon_detail[:addon_version]}")

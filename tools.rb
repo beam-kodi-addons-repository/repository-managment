@@ -116,3 +116,7 @@ end
 def git_archive(git_repo, tag, file)
   git_repo.archive(tag, file)
 end
+
+def repo_has_been_changed?(git_repo)
+  git_repo.status.changed.empty? == false
+end
