@@ -50,7 +50,7 @@ end
 
 def update_package_list(packages_content, update_options)
   packages_content[update_options[:addon_id]] = update_options
-  return packages_content
+  return packages_content.sort.to_h
 end
 
 def checkout_branch(git_repo, branch)
