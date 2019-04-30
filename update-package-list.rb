@@ -41,25 +41,14 @@ if options[:type] == "gh-release" # repository, release_name, file_name
 elsif options[:type] == "gh-repository" # repository, sha
   abort "Missing repository name for addon fetch, use -r to spefify" unless options[:gh_repository]
   abort "Missing repository commit SHA for addon fetch, use -s to spefify" unless options[:gh_sha]
-  package_options = {type: "gh-archive", github_repository: options[:gh_repository], github_sha: options[:gh_sha] }
+  package_options = {type: "gh-repository", github_repository: options[:gh_repository], github_sha: options[:gh_sha] }
 end
 
 abort("Wrong fetch-type, don't know what to do") if package_options.nil?
 
 addon_xml_path  = "addon.xml"
 update_package_file_path = "updated-package-fetched.zip"
-
-if options[:type] == "gh-release"
-  $logger.info("Fetching addon package")
-  fetch_release_file_from_github(package_options, update_package_file_path)
-elsif options[:type] == "gh-repository"
-  $logger.info("Fetching addon repository")
-  git_repo = clone_github_repo_at_sha(package_options[:github_repository], package_options[:github_sha], "updated-package-repo")
-  $logger.info("Creating addon package")
-  git_archive(git_repo, "HEAD", update_package_file_path)
-  $logger.info("Destroying addon repository")
-  destroy_git_repo(git_repo)
-end
+fetch_package(package_options, update_package_file_path, package_options[:github_repository])
 
 $logger.info("Calculating file SHA256 hash")
 package_options[:sha256] = sha256_file(update_package_file_path)
@@ -97,11 +86,11 @@ unless repo_has_been_changed?(git_repo)
     exit 0
 end
 
-$logger.info("Commiting changes")
+$logger.info("Committing changes")
 commit_changes(git_repo, "#{addon_detail[:addon_id]} v#{addon_detail[:addon_version]}")
 
 $logger.info("Pushing changes")
-git_repo.push("origin", branch_name)
+git_push(git_repo, branch_name)
 
 $logger.info("Destroying packages list repository")
 destroy_git_repo(git_repo)
