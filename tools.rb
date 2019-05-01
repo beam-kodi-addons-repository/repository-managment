@@ -14,6 +14,18 @@ $logger = Logger.new(STDOUT)
 
 require_relative 'extend_git_lib_fetch'
 
+def get_last_commit_message(git_repo)
+  if git_repo.log
+    commit = git_repo.log.last
+    message = commit.message
+    if message.match(/Merge pull request/)
+      message = message.match(/Merge pull request.+\n\n(.+)/) [1]
+    end
+    return { commit: commit, message: message.strip }
+  end
+  return nil
+end
+
 def create_github_pull_request(repository_user, repository_name, title, body, head_branch, base_branch)
   github = Github.new(oauth_token: GITHUB_TOKEN)
   github.pull_requests.create repository_user, repository_name,

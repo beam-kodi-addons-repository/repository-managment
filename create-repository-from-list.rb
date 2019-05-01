@@ -28,18 +28,19 @@ abort "Missing ENV GITHUB_TOKEN for pushing and creating pull request" if GITHUB
 abort "Missing repository user where is package list stored, use -u to spefify" unless options[:package_list_user]
 abort "Missing repository name where is package list stored, use -n to spefify" unless options[:package_list_repository]
 
-# $logger.info("Fetching current package list")
-# git_repo = clone_github_repo(options[:package_list_user], options[:package_list_repository], "master", "cloned-current-package-list")
+$logger.info("Fetching current package list")
+git_repo = clone_github_repo(options[:package_list_user], options[:package_list_repository], "master", "cloned-current-package-list")
 package_file_path = "cloned-current-package-list/packages.yml"
 $logger.info("Loading package list")
 packages_content = load_package_list(package_file_path)
-# $logger.info("Destroying packages list repository")
-# destroy_git_repo(git_repo)
+$logger.info("Search last commit message")
+last_commit = get_last_commit_message(git_repo)
+$logger.info("Destroying packages list repository")
+destroy_git_repo(git_repo)
 
 $logger.info("Fetching current packare repository")
 cloned_packages_path = "cloned-current-package-repository"
 git_repo = clone_github_repo(options[:package_list_user], options[:package_list_repository], "gh-pages", cloned_packages_path)
-# git_repo = open_git_repo(cloned_packages_path)
 
 xmldoc = REXML::Document.new
 xmldoc << REXML::XMLDecl.new("1.0", "UTF-8", "yes")
@@ -82,18 +83,27 @@ output.close
 $logger.info("Saving addons.xml.md5")
 File.open("#{cloned_packages_path}/addons.xml.md5","w") { |f| f.write(md5_file("#{cloned_packages_path}/addons.xml")) }
 
-if repo_has_been_changed?(git_repo)
+if packages_content.count == 0
+  $logger.info("No packages for repository")
+elsif repo_has_been_changed?(git_repo)
   $logger.info("Repository has been changed, committing")
   branch_name = "repository-update-#{Time.now.to_i}"
-  commit_changes(git_repo, "repository update")
+  if last_commit
+    commit_message_long = "Repository update triggered by #{last_commit[:message]}\n#{last_commit[:commit].sha}"
+    commit_message = "Repository update triggered by #{last_commit[:message]}"
+  else
+    commit_message_long = "Repository update"
+    commit_message = "Repository update"
+  end
+  commit_changes(git_repo,  commit_message_long)
   $logger.info("Pushing to branch #{branch_name}")
   git_push(git_repo, "gh-pages:#{branch_name}")
   $logger.info("Creating pull request on GitHub")
   create_github_pull_request(
       options[:package_list_user],
       options[:package_list_repository],
-      "repository update",
-      "repository update",
+      commit_message,
+      commit_message_long,
       branch_name,
       "gh-pages"
   )
