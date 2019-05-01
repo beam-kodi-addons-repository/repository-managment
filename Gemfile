@@ -4,4 +4,5 @@ source 'https://rubygems.org' do
   gem 'github_api'
   gem 'rubyzip'
   gem 'dotenv'
+  gem 'down'
 end

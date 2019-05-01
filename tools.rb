@@ -9,6 +9,7 @@ require 'fileutils'
 require 'git'
 require 'yaml'
 require 'logger'
+require 'down'
 
 $logger = Logger.new(STDOUT)
 
@@ -84,10 +85,7 @@ def destroy_git_repo(git_repo)
 end
 
 def download_file(url, path)
-  case io = open(url)
-  when StringIO then File.open(path, 'w') { |f| f.write(io) }
-  when Tempfile then io.close; FileUtils.mv(io.path, path)
-  end
+  Down.download(url, destination: path)
 end
 
 def sha256_file(path)
