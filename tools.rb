@@ -119,11 +119,13 @@ def fetch_release_file_from_github(params, path)
 end
 
 def get_file_content_from_zip(path, path_in_zip)
+  prefixed_directory = nil
+  first_record = true
   Zip::File.open(path) do |zip_file|
     zip_file.each do |entry|
-      if entry.file? && entry.name == path_in_zip
-        return entry.get_input_stream.read
-      end
+      prefixed_directory = entry.name if entry.directory? && prefixed_directory.nil? && first_record
+      return entry.get_input_stream.read if entry.file? && entry.name.sub(prefixed_directory.to_s,"") == path_in_zip
+      first_record = false
     end
   end
   return nil
@@ -133,8 +135,8 @@ def get_file_content_from_git(git_repo, tag, path)
   git_repo.show(tag, path)
 end
 
-def git_archive(git_repo, tag, file)
-  git_repo.archive(tag, file)
+def git_archive(git_repo, tag, file, addon_id)
+  git_repo.archive(tag, file, prefix: "#{addon_id}/")
 end
 
 def repo_changes(git_repo)
@@ -158,8 +160,11 @@ def fetch_package(package_options, package_file_path, package_name = "UNKNOW")
   elsif package_options[:type] == "gh-repository"
     $logger.info("Fetching addon repository [#{package_name}]")
     git_repo = clone_github_repo_at_sha(package_options[:github_repository], package_options[:github_sha], "updated-package-repo")
+    $logger.info("Reading addon.xml [#{package_name}]")
+    addon_xml_content = get_file_content_from_git(git_repo, options[:tag], "addon.xml")
+    addon_detail = get_addon_info_from_xml(addon_xml_content)
     $logger.info("Creating addon package [#{package_name}]")
-    git_archive(git_repo, "HEAD", package_file_path)
+    git_archive(git_repo, "HEAD", package_file_path, addon_detail[:addon_id])
     $logger.info("Destroying addon repository [#{package_name}]")
     destroy_git_repo(git_repo)
   end
