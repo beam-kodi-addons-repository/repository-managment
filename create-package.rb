@@ -20,7 +20,7 @@ abort "Missing repositry, use -r for repository path specify" unless options[:re
 abort "Missing repositry tag, use -t for repository tag specify" unless options[:tag]
 
 export_file_name = options[:file_name] || "RELEASE_NAME"
-export_file_name = options[:gh_pre_release] || "PRE_RELEASE_DETECTED"
+pre_release_detect_file = options[:gh_pre_release] || "PRE_RELEASE_DETECTED"
 
 $logger.info("Opening package git repositry")
 git_repo = open_git_repo(options[:repository])
