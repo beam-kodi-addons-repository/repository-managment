@@ -12,12 +12,15 @@ OptionParser.new do |opts|
   opts.on("-r", "--repository REPOSITORY-PATH", "Repository path") { |v| options[:repository] = v }
   opts.on("-t", "--tag REPOSITORY-TAG", "Repository tag") { |v| options[:tag] = v }
   opts.on("-f", "--filename FILENAME", "Save release filename into this file") { |v| options[:file_name] = v }
+  opts.on("-p", "--pre-release-file FILENAME", "Touch this file in release is pre-release") { |v| options[:gh_pre_release] = v }
+  opts.on("-g", "--github GITHUB-SLUG", "GitHub repository slug") { |v| options[:gh_slug] = v }
 end.parse!
 
 abort "Missing repositry, use -r for repository path specify" unless options[:repository]
 abort "Missing repositry tag, use -t for repository tag specify" unless options[:tag]
 
 export_file_name = options[:file_name] || "RELEASE_NAME"
+export_file_name = options[:gh_pre_release] || "PRE_RELEASE_DETECTED"
 
 $logger.info("Opening package git repositry")
 git_repo = open_git_repo(options[:repository])
