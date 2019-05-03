@@ -107,6 +107,8 @@ elsif repo_has_been_changed?(git_repo)
       branch_name,
       "gh-pages"
   )
+else
+  $logger.info("No changes in packages, nothing to do..")
 end
 $logger.info("Destroying package repository")
 destroy_git_repo(git_repo)
