@@ -52,8 +52,19 @@ packages_content.each_pair { |pkg_id, pkg_info|
   package_home_dir = "#{cloned_packages_path}/packages/#{pkg_info[:addon_id]}"
   package_dest_path = "#{package_home_dir}/#{pkg_info[:package_file]}"
 
-  Dir.mkdir(package_home_dir) unless File.directory?(package_home_dir)
-  fetch_package(pkg_info, package_dest_path, pkg_info[:addon_id])
+  if pkg_info[:type] == "gh-repository"
+    package_hash_match = (File.exists?(package_dest_path) && pkg_info[:sha256] == get_sha256_from_zip(package_dest_path))
+  else
+    package_hash_match = (File.exists?(package_dest_path) && pkg_info[:sha256] == sha256_file(package_dest_path))
+  end
+
+  if package_hash_match
+    $logger.info("Package #{pkg_info[:addon_id]} already fetched")
+  else
+    $logger.info("Fetching package #{pkg_info[:addon_id]}")
+    Dir.mkdir(package_home_dir) unless File.directory?(package_home_dir)
+    fetch_package(pkg_info, package_dest_path, pkg_info[:addon_id])
+  end
 
   # add addon xml into addons
   addon_xml = get_file_content_from_zip(package_dest_path, "addon.xml").force_encoding("utf-8")
@@ -97,16 +108,16 @@ elsif repo_has_been_changed?(git_repo)
   end
   commit_changes(git_repo,  commit_message_long)
   $logger.info("Pushing to branch #{branch_name}")
-  git_push(git_repo, "gh-pages:#{branch_name}")
+  # git_push(git_repo, "gh-pages:#{branch_name}")
   $logger.info("Creating pull request on GitHub")
-  create_github_pull_request(
-      options[:package_list_user],
-      options[:package_list_repository],
-      commit_message,
-      commit_message_long,
-      branch_name,
-      "gh-pages"
-  )
+  # create_github_pull_request(
+  #     options[:package_list_user],
+  #     options[:package_list_repository],
+  #     commit_message,
+  #     commit_message_long,
+  #     branch_name,
+  #     "gh-pages"
+  # )
 else
   $logger.info("No changes in packages, nothing to do..")
 end

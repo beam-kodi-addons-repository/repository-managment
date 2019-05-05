@@ -50,10 +50,17 @@ addon_xml_path  = "addon.xml"
 update_package_file_path = "updated-package-fetched.zip"
 fetch_package(package_options, update_package_file_path, package_options[:github_repository])
 
-$logger.info("Calculating file SHA256 hash")
-package_options[:sha256] = sha256_file(update_package_file_path)
+if package_options[:type] == "gh-repository"
+  $logger.info("Calculating zip content SHA256 hash")
+  package_options[:sha256] = get_sha256_from_zip(update_package_file_path)
+else
+  $logger.info("Calculating file SHA256 hash")
+  package_options[:sha256] = sha256_file(update_package_file_path)
+end
+
 $logger.info("Extracting #{addon_xml_path}")
 addon_xml_content = get_file_content_from_zip(update_package_file_path, addon_xml_path)
+
 $logger.info("Parsing addons.xml")
 addon_detail = get_addon_info_from_xml(addon_xml_content)
 $logger.info("Removing addon package")

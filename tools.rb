@@ -118,6 +118,16 @@ def fetch_release_file_from_github(params, path)
   download_file(fetch_url, path)
 end
 
+def get_sha256_from_zip(path)
+  crc_sum = []
+  Zip::File.open(path) do |zip_file|
+    zip_file.each do |entry|
+      crc_sum << [entry.name, entry.crc]
+    end
+  end
+  Digest::SHA256.hexdigest(crc_sum.to_s)
+end
+
 def get_file_content_from_zip(path, path_in_zip)
   prefixed_directory = nil
   first_record = true
