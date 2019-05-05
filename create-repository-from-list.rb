@@ -52,8 +52,17 @@ packages_content.each_pair { |pkg_id, pkg_info|
   package_home_dir = "#{cloned_packages_path}/packages/#{pkg_info[:addon_id]}"
   package_dest_path = "#{package_home_dir}/#{pkg_info[:package_file]}"
 
-  Dir.mkdir(package_home_dir) unless File.directory?(package_home_dir)
-  fetch_package(pkg_info, package_dest_path, pkg_info[:addon_id])
+  if File.exists?(package_dest_path) && pkg_info[:sha256] == sha256_file(package_dest_path)
+    $logger.info("Package #{pkg_info[:addon_id]} already fetched")
+  else
+    puts pkg_info[:sha256]
+    puts sha256_file(package_dest_path) if File.exists?(package_dest_path)
+
+    $logger.info("Fetching package #{pkg_info[:addon_id]}")
+    Dir.mkdir(package_home_dir) unless File.directory?(package_home_dir)
+    fetch_package(pkg_info, package_dest_path, pkg_info[:addon_id])
+    puts sha256_file(package_dest_path)
+  end
 
   # add addon xml into addons
   addon_xml = get_file_content_from_zip(package_dest_path, "addon.xml").force_encoding("utf-8")
