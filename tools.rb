@@ -120,9 +120,14 @@ end
 
 def get_sha256_from_zip(path)
   crc_sum = []
+  prefixed_directory = nil
+  first_record = true
   Zip::File.open(path) do |zip_file|
     zip_file.each do |entry|
-      crc_sum << [entry.name, entry.crc]
+      prefixed_directory = entry.name if entry.directory? && prefixed_directory.nil? && first_record
+      entry_name = entry.name.sub(/^#{prefixed_directory.to_s}/,"")
+      crc_sum << [entry_name, entry.crc] unless entry_name.empty?
+      first_record = false
     end
   end
   Digest::SHA256.hexdigest(crc_sum.to_s)
@@ -134,7 +139,7 @@ def get_file_content_from_zip(path, path_in_zip)
   Zip::File.open(path) do |zip_file|
     zip_file.each do |entry|
       prefixed_directory = entry.name if entry.directory? && prefixed_directory.nil? && first_record
-      return entry.get_input_stream.read if entry.file? && entry.name.sub(prefixed_directory.to_s,"") == path_in_zip
+      return entry.get_input_stream.read if entry.file? && entry.name.sub(/^#{prefixed_directory.to_s}/,"") == path_in_zip
       first_record = false
     end
   end

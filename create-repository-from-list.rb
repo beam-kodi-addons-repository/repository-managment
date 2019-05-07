@@ -108,16 +108,16 @@ elsif repo_has_been_changed?(git_repo)
   end
   commit_changes(git_repo,  commit_message_long)
   $logger.info("Pushing to branch #{branch_name}")
-  # git_push(git_repo, "gh-pages:#{branch_name}")
+  git_push(git_repo, "gh-pages:#{branch_name}")
   $logger.info("Creating pull request on GitHub")
-  # create_github_pull_request(
-  #     options[:package_list_user],
-  #     options[:package_list_repository],
-  #     commit_message,
-  #     commit_message_long,
-  #     branch_name,
-  #     "gh-pages"
-  # )
+  create_github_pull_request(
+      options[:package_list_user],
+      options[:package_list_repository],
+      commit_message,
+      commit_message_long,
+      branch_name,
+      "gh-pages"
+  )
 else
   $logger.info("No changes in packages, nothing to do..")
 end
