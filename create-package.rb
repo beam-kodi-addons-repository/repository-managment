@@ -12,8 +12,6 @@ OptionParser.new do |opts|
   opts.on("-r", "--repository REPOSITORY-PATH", "Repository path") { |v| options[:repository] = v }
   opts.on("-t", "--tag REPOSITORY-TAG", "Repository tag") { |v| options[:tag] = v }
   opts.on("-f", "--filename FILENAME", "Save release filename into this file") { |v| options[:file_name] = v }
-  opts.on("-p", "--pre-release-file FILENAME", "Touch this file in release is pre-release") { |v| options[:gh_pre_release] = v }
-  opts.on("-g", "--github GITHUB-SLUG", "GitHub repository slug") { |v| options[:gh_slug] = v }
 end.parse!
 
 abort "Missing repositry, use -r for repository path specify" unless options[:repository]

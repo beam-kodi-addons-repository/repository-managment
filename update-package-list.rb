@@ -33,11 +33,13 @@ abort "Missing fetch-type, use -e fetch type specify (gh-release or gh-repositor
 abort "Missing repository user where is package list stored, use -u to spefify" unless options[:package_list_user]
 abort "Missing repository name where is package list stored, use -n to spefify" unless options[:package_list_repository]
 
+
+
 if options[:type] == "gh-release" # repository, release_name, file_name
   abort "Missing repository name for addon fetch, use -r to spefify" unless options[:gh_repository]
   abort "Missing repository release name for addon fetch, use -t to spefify" unless options[:gh_release]
   abort "Missing repository release file name for addon fetch, use -f to spefify" unless options[:gh_release_file]
-  package_options = {type: "gh-release", github_repository: options[:gh_repository], github_release: options[:gh_release], github_filename: options[:gh_release_file] }
+  package_options = {type: "gh-release", github_repository: options[:gh_repository], github_release: options[:gh_release].sub('refs/tags/',''), github_filename: options[:gh_release_file] }
 elsif options[:type] == "gh-repository" # repository, sha
   abort "Missing repository name for addon fetch, use -r to spefify" unless options[:gh_repository]
   abort "Missing repository commit SHA for addon fetch, use -s to spefify" unless options[:gh_sha]
