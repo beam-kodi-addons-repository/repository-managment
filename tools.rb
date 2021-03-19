@@ -57,8 +57,12 @@ def clone_github_repo_at_sha(repository, sha, path, depth = 1)
 end
 
 def load_package_list(package_list_file)
-  packages_content = YAML.load(File.read(package_list_file))
-  packages_content = Hash.new unless packages_content.is_a?(Hash)
+  if File.exist?(package_list_file)
+    packages_content = YAML.load(File.read(package_list_file))
+    packages_content = Hash.new unless packages_content.is_a?(Hash)
+  else
+    packages_content = Hash.new
+  end
   return packages_content
 end
 

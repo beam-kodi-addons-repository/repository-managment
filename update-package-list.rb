@@ -15,6 +15,7 @@ GIT_USER_EMAIL = ENV['GIT_USER_EMAIL']
 options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: update-package-list [options]"
+  opts.on("-k", "--kodi-version KODI-VERSION") { |v| options[:kodi_version] = v }
   opts.on("-u", "--packages-gh-user GH-REPO-USER") { |v| options[:package_list_user] = v }
   opts.on("-n", "--packages-gh-repo GH-REPO-NAME") { |v| options[:package_list_repository] = v }
   opts.on("-e", "--fetch-type FETCH-TYPE") { |v| options[:type] = v }
@@ -30,10 +31,16 @@ abort "Missing ENV GITHUB_USER for pushing and creating pull request" if GITHUB_
 abort "Missing ENV GITHUB_TOKEN for pushing and creating pull request" if GITHUB_TOKEN.nil? || GITHUB_TOKEN.empty?
 abort "Missing fetch-type, use -e fetch type specify (gh-release or gh-repository)" unless options[:type]
 
-abort "Missing repository user where is package list stored, use -u to spefify" unless options[:package_list_user]
-abort "Missing repository name where is package list stored, use -n to spefify" unless options[:package_list_repository]
+abort "Missing repository user where is package list stored, use -u to specify" unless options[:package_list_user]
+abort "Missing repository name where is package list stored, use -n to specify" unless options[:package_list_repository]
 
+options[:kodi_version] = (ENV['KODI_VERSION'] || ENV['DEFAULT_KODI_VERSION'] || "") if options[:kodi_version].nil? || options[:kodi_version].empty?
 
+if options[:kodi_version].empty?
+  abort "Missing kodi version, use -k to specify" 
+else 
+  options[:kodi_version] = options[:kodi_version].strip.downcase
+end
 
 if options[:type] == "gh-release" # repository, release_name, file_name
   abort "Missing repository name for addon fetch, use -r to spefify" unless options[:gh_repository]
@@ -73,7 +80,7 @@ $logger.info("Collected addon information #{package_options.inspect}")
 
 $logger.info("Fetching current package list")
 git_repo = clone_github_repo(options[:package_list_user], options[:package_list_repository], "master", "cloned-current-package-list")
-package_file_path = "cloned-current-package-list/packages.yml"
+package_file_path = "cloned-current-package-list/packages-#{options[:kodi_version]}.yml"
 
 $logger.info("Loading package list")
 packages_content = load_package_list(package_file_path)
